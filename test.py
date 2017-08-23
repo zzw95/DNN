@@ -68,7 +68,7 @@ def random_test():
     X, Y, Y_onehot=input_data.loadRandomData()
     layer_types=['relu','softmax',]
     hidden_layer_dims=[120,]
-    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, lambd=1)
+    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, lambd=1.2)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
     print('Training accuracy: %f' % train_accuracy)
@@ -80,12 +80,34 @@ def random_test_with_dropout():
     X, Y, Y_onehot=input_data.loadRandomData()
     layer_types=['relu','softmax',]
     hidden_layer_dims=[120,]
-    parameters = nn_model.model_with_dropout(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000)
+    parameters = nn_model.model_with_dropout(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, num_batches=2)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
     print('Training accuracy: %f' % train_accuracy)
 
     plot.show_decision_boundry(X, Y, Y_onehot, nn_model.predict, parameters, hidden_layer_dims, layer_types)
+
+def random_test_with_adam():
+    X, Y, Y_onehot=input_data.loadRandomData()
+    layer_types=['relu','softmax',]
+    hidden_layer_dims=[120,]
+    parameters = nn_model.model_with_adam(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, num_batches=2)
+    Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
+    train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
+    print('Training accuracy: %f' % train_accuracy)
+
+    plot.show_decision_boundry(X, Y, Y_onehot, nn_model.predict, parameters, hidden_layer_dims, layer_types)
+
+def random_test_with_dropout_adam():
+    X, Y, Y_onehot=input_data.loadRandomData()
+    layer_types=['relu','softmax',]
+    hidden_layer_dims=[120,]
+    parameters = nn_model.model_with_dropout_adam(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000)
+    Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
+    train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
+    print('Training accuracy: %f' % train_accuracy)
+
+    # plot.show_decision_boundry(X, Y, Y_onehot, nn_model.predict, parameters, hidden_layer_dims, layer_types)
 
 
 def not_mnist_test():
@@ -98,4 +120,3 @@ def not_mnist_test():
     print(Y[0:10])
     print('Training accuracy: %f' % train_accuracy)
 
-random_test_with_dropout()

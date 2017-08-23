@@ -8,11 +8,12 @@ def create_placeholders(layer_dims):
     Y = tf.placeholder(dtype=tf.float64, shape=[layer_dims[-1], None])
     return X,Y
 
-def init_params(layer_dims,scale=0.01):
+def init_params(layer_dims, scale=0.01):
     parameters={}
     L=len(layer_dims)
     for l in range(1,L):
-        parameters['W'+str(l)]= scale * tf.get_variable('W'+str(l), [layer_dims[l],layer_dims[l-1]], dtype=np.float64,initializer = tf.contrib.layers.xavier_initializer(seed = 1))
+        parameters['W'+str(l)] = tf.Variable(tf.truncated_normal([layer_dims[l],layer_dims[l-1]], dype=np.float64))
+        # parameters['W'+str(l)]= scale * tf.get_variable('W'+str(l), [layer_dims[l],layer_dims[l-1]], dtype=np.float64,initializer = tf.contrib.layers.xavier_initializer(seed = 1))
         parameters['b'+str(l)] = tf.Variable(tf.zeros([layer_dims[l],1],dtype=np.float64), name='b'+str(l))
     return parameters
 
