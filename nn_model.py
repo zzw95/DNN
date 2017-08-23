@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 def sigmoid(z):
     """
@@ -27,7 +28,7 @@ def softmax(z):
     assert(a.shape==e.shape)
     return a
 
-def init_params(layer_dims, scale=0.01, init_type='random'):
+def init_params(layer_dims, init_type='random', scale=0.01,):
     """
     :param layer_dims: python list containing the size of each layer
     :param scale: scalar parameter for random initiation
@@ -39,9 +40,8 @@ def init_params(layer_dims, scale=0.01, init_type='random'):
     parameters={}
     L=len(layer_dims)
     for l in range(1,L):
-        # parameters['W'+str(l)] = np.random.randn(layer_dims[l],layer_dims[l-1]) * ((2/layer_dims[l-1])**0.5)
         if init_type=='random':
-            parameters['W'+str(l)] = scale * np.random.randn(layer_dims[l],layer_dims[l-1])
+            parameters['W'+str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1]) *scale
         elif init_type=='zeros':
             parameters['W'+str(l)] = np.zeros((layer_dims[l],layer_dims[l-1]))
         elif init_type=='he':
@@ -193,7 +193,7 @@ def update_parameters(parameters, grads, learning_rate):
     return parameters
 
 
-def comput_cost(Yhat, Y, parameters, activation, lambd):
+def compute_cost(Yhat, Y, parameters, activation, lambd):
     """
     :param Yhat: prediction labels vector, of shape (output size, number of examples)
     :param Y: labels vector, of shape (output size, number of examples)
@@ -205,9 +205,13 @@ def comput_cost(Yhat, Y, parameters, activation, lambd):
     m = Y.shape[1]
     cost = 0
     if activation=='sigmoid':
+        Yhat[np.where(Yhat==0)] = 1e-8    # in case that log(0)
+        Yhat[np.where(Yhat==1)] = 1-1e-8    # in case that log(0)
         cost = -np.sum(Y*np.log(Yhat)+(1-Y)*np.log(1-Yhat))/m
     elif activation=='softmax':
+        Yhat[np.where(Yhat==0)] = 1e-8    # in case that log(0)
         cost = -np.sum(Y*np.log(Yhat))/m
+
     else:
         raise ValueError('The type of output layer should be sigmoid or softmax !!!')
 
@@ -221,7 +225,7 @@ def comput_cost(Yhat, Y, parameters, activation, lambd):
     return cost
 
 
-def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, lambd=0.0 , init_type='random' ):
+def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random' ):
     """
     :param X: input data of shape (size of input layer, number of examples)
     :param Y: labels vector  of shape (size of output layer, number of examples),
@@ -230,6 +234,7 @@ def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, l
     :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
     :param learning_rate: scalar
     :param num_iterations: scalar
+    :param num_batches: scalar
     :param lambd: regularization parameter
     :param init_type: 'random', 'zeros', 'he'
     :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
@@ -240,28 +245,29 @@ def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, l
     layer_dims.append(Y.shape[0])
     parameters = init_params(layer_dims, init_type)
     costs=[]
+    batch_size = Y.shape[1] // num_batches
     for i in range(num_iterations):
-        # Forward propagation
-        Yhat,caches = forword_propagation(X, parameters, layer_dims, layer_types)
+        for j in range(num_batches):
+            # Forward propagation
+            Yhat,caches = forword_propagation(X[:, j*batch_size : (j+1)*batch_size], parameters, layer_dims, layer_types)
 
-        # Compute cost
-        cost =comput_cost(Yhat, Y, parameters, layer_types[-1], lambd)
+            # Compute cost
+            cost =compute_cost(Yhat, Y[:, j*batch_size : (j+1)*batch_size], parameters, layer_types[-1], lambd)
 
-        # Backward propagation
-        grads = backword_propagation(X, Y, parameters, caches, layer_dims, layer_types, lambd)
+            # Backward propagation
+            grads = backword_propagation(X[:, j*batch_size : (j+1)*batch_size], Y[:, j*batch_size : (j+1)*batch_size], parameters, caches, layer_dims, layer_types, lambd)
 
-        # Update parameters
-        parameters = update_parameters(parameters, grads, learning_rate)
+            # Update parameters
+            parameters = update_parameters(parameters, grads, learning_rate)
 
-        # Print the cost every 100 training example
         if i % 10 == 0:
-            print ("Cost after iteration %i: %f" %(i, cost))
+            print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
             costs.append(cost)
 
     # plot the cost
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
-    plt.xlabel('iterations (per tens)')
+    plt.xlabel('iterations')
     plt.title("Learning rate =" + str(learning_rate))
     plt.show()
 
@@ -356,15 +362,17 @@ def backword_propagation_with_dropout(X, Y, parameters, caches, layer_dims, laye
         grads['db'+str(l+1)] = db
     return grads
 
-def model_with_dropout(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, keep_prob = 0.5, init_type='random' ):
+def model_with_dropout(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches = 1, keep_prob = 0.5, init_type='random' ):
     """
+    dropout should not be applied to input layer (layer 0) and outputlayer (the last layer)
     :param X: input data of shape (size of input layer, number of examples)
     :param Y: labels vector  of shape (size of output layer, number of examples),
               ---for multi claasification, Y must use ont-hot encoding
     :param hidden_layer_dims: python list containing the size of each hidden layer
     :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
-    :param learning_rate:
-    :param num_iterations:
+    :param learning_rate: scalar
+    :param num_iterations: scalar
+    :param num_batches: scalar
     :param keep_prob: scalar, dropout parameter
     :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
     """
@@ -374,28 +382,176 @@ def model_with_dropout(X, Y, hidden_layer_dims, layer_types, learning_rate, num_
     layer_dims.append(Y.shape[0])
     parameters = init_params(layer_dims)
     costs=[]
+    batch_size = Y.shape[1] // num_batches
     for i in range(num_iterations):
-        # Forward propagation
-        Yhat,caches = forword_propagation_with_dropout(X, parameters, layer_dims, layer_types)
+        for j in range(num_batches):
+            # Forward propagation
+            Yhat,caches = forword_propagation_with_dropout(X[:, j*batch_size : (j+1)*batch_size], parameters, layer_dims, layer_types)
 
-        # Compute cost
-        cost =comput_cost(Yhat, Y, parameters, layer_types[-1], lambd=0)
+            # Compute cost
+            cost =compute_cost(Yhat, Y[:, j*batch_size : (j+1)*batch_size], parameters, layer_types[-1], lambd=0)
 
-        # Backward propagation
-        grads = backword_propagation_with_dropout(X, Y, parameters, caches, layer_dims, layer_types)
+            # Backward propagation
+            grads = backword_propagation_with_dropout(X[:, j*batch_size : (j+1)*batch_size], Y[:, j*batch_size : (j+1)*batch_size], parameters, caches, layer_dims, layer_types)
 
-        # Update parameters
-        parameters = update_parameters(parameters, grads, learning_rate)
+            # Update parameters
+            parameters = update_parameters(parameters, grads, learning_rate)
 
-        # Print the cost every 100 training example
-        if i % 10 == 0:
-            print ("Cost after iteration %i: %f" %(i, cost))
-            costs.append(cost)
+            # Print the cost every 100 training example
+            if i % 10 == 0:
+                print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
+                costs.append(cost)
 
     # plot the cost
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
-    plt.xlabel('iterations (per tens)')
+    plt.xlabel('iterations')
+    plt.title("Learning rate =" + str(learning_rate))
+    plt.show()
+
+    return parameters
+
+
+def initialize_adam(parameters):
+    """
+    :param parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
+    :return: v: python dictionary containing the exponentially weighted average of the gradient
+             s: python dictionary containing the exponentially weighted average of the squared gradient
+    """
+    L = len(parameters) // 2
+    v = {}
+    s = {}
+    for l in range(L):
+        v['dW'+str(l+1)] = np.zeros(parameters['W'+str(l+1)].shape)
+        v['db'+str(l+1)] = np.zeros(parameters['b'+str(l+1)].shape)
+        s['dW'+str(l+1)] = np.zeros(parameters['W'+str(l+1)].shape)
+        s['db'+str(l+1)] = np.zeros(parameters['b'+str(l+1)].shape)
+    return v, s
+
+def update_parameters_with_adam(parameters, grads, v, s, learning_rate, beta1, beta2, t):
+    """
+    Update parameters using gradient descent
+    :param parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
+    :param grads: python dictionary storing gradients of each layer, {'dWi': ,'dbi': }
+    :param v: python dictionary containing the exponentially weighted average of the gradient
+           s: python dictionary containing the exponentially weighted average of the squared gradient
+    :param learning_rate: scalar
+    :param beta1, beta2, t: scalar
+    :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
+             v: python dictionary containing the exponentially weighted average of the gradient
+             s: python dictionary containing the exponentially weighted average of the squared gradient
+    """
+    epsilon = 1e-8
+    L = len(parameters) // 2
+    v_corrected = {}
+    s_corrected = {}
+    for l in range(L):
+        v['dW'+str(l+1)] = beta1 * v['dW'+str(l+1)] + (1-beta1) * grads["dW" + str(l+1)]
+        v['db'+str(l+1)] = beta1 * v['db'+str(l+1)] + (1-beta1) * grads["db" + str(l+1)]
+        v_corrected['dW'+str(l+1)] = v['dW'+str(l+1)] / (1 - beta1**t)
+        v_corrected['db'+str(l+1)] = v['db'+str(l+1)] / (1 - beta1**t)
+        s['dW'+str(l+1)] = beta2 * s['dW'+str(l+1)] + (1-beta2) * (grads["dW" + str(l+1)]**2)
+        s['db'+str(l+1)] = beta2 * s['db'+str(l+1)] + (1-beta2) * (grads["db" + str(l+1)]**2)
+        s_corrected['dW'+str(l+1)] = s['dW'+str(l+1)] / (1 - beta2**t)
+        s_corrected['db'+str(l+1)] = s['db'+str(l+1)] / (1 - beta2**t)
+        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate * v_corrected['dW'+str(l+1)] / (s_corrected['dW'+str(l+1)]**0.5 + epsilon)
+        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate * v_corrected['db'+str(l+1)] / (s_corrected['db'+str(l+1)]**0.5 + epsilon)
+    return parameters, v, s
+
+def model_with_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random',beta1=0.9, beta2=0.999, t=2 ):
+    """
+    :param X: input data of shape (size of input layer, number of examples)
+    :param Y: labels vector  of shape (size of output layer, number of examples),
+              ---for multi claasification, Y must use ont-hot encoding
+    :param hidden_layer_dims: python list containing the size of each hidden layer
+    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
+    :param learning_rate: scalar
+    :param num_iterations: scalar
+    :param num_batches: scalar
+    :param lambd: regularization parameter
+    :param init_type: 'random', 'zeros', 'he'
+    :param beta1, beta2 ,t: scalar
+    :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
+    """
+    layer_dims=[X.shape[0],]
+    if hidden_layer_dims!=None:
+        layer_dims.extend(hidden_layer_dims)
+    layer_dims.append(Y.shape[0])
+    parameters = init_params(layer_dims, init_type)
+    v, s = initialize_adam(parameters)
+    costs=[]
+    batch_size = Y.shape[1] // num_batches
+    for i in range(num_iterations):
+        for j in range(num_batches):
+            # Forward propagation
+            Yhat,caches = forword_propagation(X[:, j*batch_size : (j+1)*batch_size], parameters, layer_dims, layer_types)
+
+            # Compute cost
+            cost = compute_cost(Yhat, Y[:, j*batch_size : (j+1)*batch_size], parameters, layer_types[-1], lambd)
+
+            # Backward propagation
+            grads = backword_propagation(X[:, j*batch_size : (j+1)*batch_size], Y[:, j*batch_size : (j+1)*batch_size], parameters, caches, layer_dims, layer_types, lambd)
+
+            # Update parameters
+            parameters, v, s = update_parameters_with_adam(parameters, grads, v, s, learning_rate, beta1, beta2, t)
+
+            if i % 10 == 0:
+                print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
+                costs.append(cost)
+
+    # plot the cost
+    plt.plot(np.squeeze(costs))
+    plt.ylabel('cost')
+    plt.xlabel('iterations')
+    plt.title("Learning rate =" + str(learning_rate))
+    plt.show()
+
+    return parameters
+
+def model_with_dropout_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches = 1, keep_prob = 0.5, init_type='random',beta1=0.9, beta2=0.999, t=2 ):
+    """
+    dropout should not be applied to input layer (layer 0) and outputlayer (the last layer)
+    :param X: input data of shape (size of input layer, number of examples)
+    :param Y: labels vector  of shape (size of output layer, number of examples),
+              ---for multi claasification, Y must use ont-hot encoding
+    :param hidden_layer_dims: python list containing the size of each hidden layer
+    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
+    :param learning_rate: scalar
+    :param num_iterations: scalar
+    :param num_batches: scalar
+    :param keep_prob: scalar, dropout parameter
+    :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
+    """
+    layer_dims=[X.shape[0],]
+    if hidden_layer_dims!=None:
+        layer_dims.extend(hidden_layer_dims)
+    layer_dims.append(Y.shape[0])
+    parameters = init_params(layer_dims)
+    v, s = initialize_adam(parameters)
+    costs=[]
+    batch_size = Y.shape[1] // num_batches
+    for i in range(num_iterations):
+        for j in range(num_batches):
+            # Forward propagation
+            Yhat,caches = forword_propagation_with_dropout(X[:, j*batch_size : (j+1)*batch_size], parameters, layer_dims, layer_types)
+
+            # Compute cost
+            cost =compute_cost(Yhat, Y[:, j*batch_size : (j+1)*batch_size], parameters, layer_types[-1], lambd=0)
+
+            # Backward propagation
+            grads = backword_propagation_with_dropout(X[:, j*batch_size : (j+1)*batch_size], Y[:, j*batch_size : (j+1)*batch_size], parameters, caches, layer_dims, layer_types)
+
+            # Update parameters
+            parameters, v, s = update_parameters_with_adam(parameters, grads, v, s, learning_rate, beta1, beta2, t)
+
+            if i % 10 == 0:
+                print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
+                costs.append(cost)
+
+    # plot the cost
+    plt.plot(np.squeeze(costs))
+    plt.ylabel('cost')
+    plt.xlabel('iterations')
     plt.title("Learning rate =" + str(learning_rate))
     plt.show()
 
