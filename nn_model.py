@@ -260,9 +260,9 @@ def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, n
             # Update parameters
             parameters = update_parameters(parameters, grads, learning_rate)
 
-        if i % 10 == 0:
-            print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
-            costs.append(cost)
+            if i % 10 == 0:
+                print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
+                costs.append(cost)
 
     # plot the cost
     plt.plot(np.squeeze(costs))
@@ -277,12 +277,12 @@ def predict(X, Y, parameters, hidden_layer_dims, layer_types, threshold=0.5):
     """
     Predict using learned model (parameters)
     :param X: input data of shape (size of input layer, number of examples)
-    :param Y: labels vector  of shape (1, number of examples), not one-hot
+    :param Y: labels vector  of shape (size of output layer, number of examples),
     :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
     :param hidden_layer_dims: python list containing the size of each hidden layer
     :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
     :param threshold: scalar for logistic regression
-    :return: Y_predict , predicted labels vector of shape (size of output layer, number of examples)
+    :return: Y_predict , predicted labels vector of shape (1, number of examples)
     """
     layer_dims=[X.shape[0],]
     if hidden_layer_dims!=None:
@@ -291,12 +291,14 @@ def predict(X, Y, parameters, hidden_layer_dims, layer_types, threshold=0.5):
     Yhat, _ = forword_propagation(X, parameters, layer_dims, layer_types)
     if layer_types[-1]=='sigmoid':
         Y_predict = (Yhat>threshold)*1
+        accuracy = np.sum(Y_predict ==Y) / Y.shape[1]
+
     elif layer_types[-1]=='softmax':
-        Y_predict = np.argmax(Yhat,axis=0)
+        Y_predict = np.argmax(Yhat,axis=0).reshape((1,-1))
+        accuracy = np.sum(np.squeeze(Y_predict) == np.argmax(Y, axis=0)) / Y.shape[1]
     else:
         raise ValueError('The type of output layer should be sigmoid or softmax !!!')
 
-    accuracy = np.sum(Y_predict.squeeze()==Y.squeeze()) / Y.shape[1]
 
     return Y_predict, accuracy
 

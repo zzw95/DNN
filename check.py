@@ -3,7 +3,7 @@ import nn_model_tf
 import numpy as np
 import nn_model
 import matplotlib.pyplot as plt
-import notMNIST
+import notMNIST_MNIST
 
 def gradient_check(X, Y, layer_dims, layer_types, parameters,lambd, epsilon = 1e-5, num_params =8):
     """
