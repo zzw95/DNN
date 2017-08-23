@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 def show_decision_boundry(X, Y, Y_onehot, predict_function, parameters, hidden_layer_dims, layer_types, h = 0.02, space = 1):
     """
@@ -30,4 +31,23 @@ def show_decision_boundry(X, Y, Y_onehot, predict_function, parameters, hidden_l
     plt.scatter(X[0, :], X[1, :], c=Y, s=40, cmap=plt.cm.Spectral)
     plt.xlim(x1.min(), x1.max())
     plt.ylim(x2.min(), x2.max())
+    plt.show()
+
+
+def display_image_samples(datasets, image_shape, sample_indices):
+    """
+    :param datasets: images ndarray of shape(image_size1 * image_size2, number of examples)
+    :param image_shape: python list or tuple of len 2
+    :param sample_indices:  python list or tuple
+    :return:
+    """
+    num_samples = len(sample_indices)
+    num_axis1 = math.floor(math.sqrt(num_samples))
+    num_axis2 = num_samples // num_axis1
+    for i in range(num_axis1):
+        for j in range(num_axis2):
+            index = sample_indices[num_axis2*i+j]
+            image=datasets[:, index].reshape(image_shape)
+            plt.subplot(num_axis1, num_axis2 , num_axis2*i+j+1)
+            plt.imshow(image)
     plt.show()

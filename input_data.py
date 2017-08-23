@@ -82,6 +82,8 @@ def loadRandomData(N=100,D=2,K=3):
     Y_onehot = onehot_encode(Y,K)
     return X,Y, Y_onehot
 
+
+
 def onehot_encode(Y, C):
     """
     :param: Y -- vector containing the labels, shape = (1,number of examples) or (number of examples)
@@ -115,4 +117,3 @@ def randomize(datasets, labels):
         shuffle_labels = None
 
     return shuffle_dataset,shuffle_labels
-

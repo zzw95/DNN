@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from  scipy import ndimage
 import os
+import math
 import input_data
 
 image_size = 28  # Pixel width and height.
@@ -52,15 +53,23 @@ def load_notMNIST():
 
     labels_onehot = input_data.onehot_encode(labels, num_classes)    # labels_onehot = (10, 10000)
 
-    return datasets, labels
+    return datasets, labels, labels_onehot
+
+def load_MINIST(n):
+    """
+    :param n: number of examples to load
+    :return: datasets: shape(image_size * image_size, number of examples)  (784, 10000)
+             labels: shape(1, number of examples)  (1, 1000)
+    """
+    import tensorflow.examples.tutorials.mnist as tf_mnist
+    mnist= tf_mnist.input_data.read_data_sets("MNIST_data/", one_hot=True)
+    datasets, labels = mnist.train.next_batch(n)
+    datasets = datasets.T    # X.shape = (784,number of examples)
+    labels_onehot = labels.T    # Y_one.shape = (10,number of examples)
+    labels = np.argmax(labels_onehot, axis=0).reshape((1,-1))
+    return datasets, labels, labels_onehot
 
 
-def display_sample(datasets):
-    plt.figure('sample')
-    sample_per_class=10
-    for i in range(num_classes):
-        for j in range(sample_per_class):
-            image=datasets[num_per_class*i+j]
-            plt.subplot(sample_per_class,sample_per_class,sample_per_class*i+j+1)
-            plt.imshow(image)
-    plt.show()
+
+
+
