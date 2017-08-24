@@ -225,7 +225,7 @@ def compute_cost(Yhat, Y, parameters, activation, lambd):
     return cost
 
 
-def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random' ):
+def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random',decay_rate=0.99 ):
     """
     :param X: input data of shape (size of input layer, number of examples)
     :param Y: labels vector  of shape (size of output layer, number of examples),
@@ -263,6 +263,8 @@ def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, n
             if i % 10 == 0:
                 print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
                 costs.append(cost)
+
+        learning_rate = learning_rate * decay_rate
 
     # plot the cost
     plt.plot(np.squeeze(costs))
@@ -460,7 +462,7 @@ def update_parameters_with_adam(parameters, grads, v, s, learning_rate, beta1, b
         parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate * v_corrected['db'+str(l+1)] / (s_corrected['db'+str(l+1)]**0.5 + epsilon)
     return parameters, v, s
 
-def model_with_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random',beta1=0.9, beta2=0.999, t=2 ):
+def model_with_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random',beta1=0.9, beta2=0.999, t=2, decay_rate=0.99 ):
     """
     :param X: input data of shape (size of input layer, number of examples)
     :param Y: labels vector  of shape (size of output layer, number of examples),
@@ -501,6 +503,8 @@ def model_with_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_ite
                 print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
                 costs.append(cost)
 
+        learning_rate = learning_rate * decay_rate
+
     # plot the cost
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
@@ -510,7 +514,7 @@ def model_with_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_ite
 
     return parameters
 
-def model_with_dropout_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches = 1, keep_prob = 0.5, init_type='random',beta1=0.9, beta2=0.999, t=2 ):
+def model_with_dropout_adam(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches = 1, keep_prob = 0.5, init_type='random',beta1=0.9, beta2=0.999, t=2, decay_rate=0.99 ):
     """
     dropout should not be applied to input layer (layer 0) and outputlayer (the last layer)
     :param X: input data of shape (size of input layer, number of examples)
@@ -549,6 +553,8 @@ def model_with_dropout_adam(X, Y, hidden_layer_dims, layer_types, learning_rate,
             if i % 10 == 0:
                 print ("Cost after iteration %d and batch %d: %f" %(i, j, cost))
                 costs.append(cost)
+
+        learning_rate = learning_rate * decay_rate
 
     # plot the cost
     plt.plot(np.squeeze(costs))

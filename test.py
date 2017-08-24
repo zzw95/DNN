@@ -74,7 +74,7 @@ def not_mnist_test():
         # X.shape = (784, 10000), Y.shape = (1, 10000), Y_onehot.shape = (10, 10000)
     layer_types=['relu','softmax',]
     hidden_layer_dims=[100,]
-    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=100, num_batches = 10)
+    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.8, num_iterations=100, num_batches = 10)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     print('Training accuracy: %f' % train_accuracy)
     image_shape=(28,28)
