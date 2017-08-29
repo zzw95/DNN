@@ -5,6 +5,8 @@
    * forward and backward propagation, cost function 
    * gradient descent optimization algorithm
    * regularization, including L2 regularization and dropout
-   * optimization, including mini batch and adam mode
+   * optimization, including mini-batch and adam mode
    * gradient checking
+   * one-hot encoding
+   
 2. Deeep Neural Network using Tensorflow
