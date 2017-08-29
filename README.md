@@ -7,6 +7,6 @@
    * regularization, including L2 regularization and dropout
    * optimization, including mini-batch and adam mode
    * gradient checking
-   * one-hot encoding
-   
+   * one-hot encoding
+   
 2. Deeep Neural Network using Tensorflow
