@@ -11,7 +11,7 @@ def handWriting_test():
     X_train, Y_train = input_data.loadHandwritingTrainingData()    #X_train.shape=(1024,387)  Y_train.shape=(1,387)
     layer_types= ['sigmoid']
     hidden_layer_dims=None
-    parameters = nn_model.model(X_train, Y_train, hidden_layer_dims, layer_types, learning_rate=0.1, num_iterations= 500)
+    parameters = nn_model.model(X_train, Y_train, hidden_layer_dims, layer_types, learning_rate=0.1, num_iterations= 501)
 
     Y_train_predict, train_accuracy  = nn_model.predict(X_train, Y_train, parameters, hidden_layer_dims, layer_types)
     print('Training accuracy: %f' % train_accuracy)
@@ -27,7 +27,7 @@ def random_test():
     X, Y, Y_onehot=input_data.loadRandomData()
     layer_types=['relu','softmax',]
     hidden_layer_dims=[120,]
-    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, lambd=1.2)
+    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2001, lambd=1.2)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
     print('Training accuracy: %f' % train_accuracy)
@@ -39,7 +39,7 @@ def random_test_with_dropout():
     X, Y, Y_onehot=input_data.loadRandomData()
     layer_types=['relu','softmax',]
     hidden_layer_dims=[120,]
-    parameters = nn_model.model_with_dropout(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, num_batches=2)
+    parameters = nn_model.model_with_dropout(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2001, num_batches=2)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
     print('Training accuracy: %f' % train_accuracy)
@@ -50,7 +50,7 @@ def random_test_with_adam():
     X, Y, Y_onehot=input_data.loadRandomData()
     layer_types=['relu','softmax',]
     hidden_layer_dims=[120,]
-    parameters = nn_model.model_with_adam(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000, num_batches=2)
+    parameters = nn_model.model_with_adam(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2001, num_batches=2)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
     print('Training accuracy: %f' % train_accuracy)
@@ -61,7 +61,7 @@ def random_test_with_dropout_adam():
     X, Y, Y_onehot=input_data.loadRandomData()
     layer_types=['relu','softmax',]
     hidden_layer_dims=[120,]
-    parameters = nn_model.model_with_dropout_adam(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2000)
+    parameters = nn_model.model_with_dropout_adam(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=2001)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     train_accuracy = np.sum(Y_predict==Y) / Y.shape[1]
     print('Training accuracy: %f' % train_accuracy)
@@ -74,7 +74,7 @@ def not_mnist_test():
         # X.shape = (784, 10000), Y.shape = (1, 10000), Y_onehot.shape = (10, 10000)
     layer_types=['relu','softmax',]
     hidden_layer_dims=[100,]
-    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.8, num_iterations=100, num_batches = 10)
+    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.8, num_iterations=101, num_batches = 10)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     print('Training accuracy: %f' % train_accuracy)
     image_shape=(28,28)
@@ -90,7 +90,7 @@ def mnist_test():
         # X.shape = (784, 10000), Y.shape = (1, 10000), Y_onehot.shape = (10, 10000)
     layer_types=['softmax',]
     hidden_layer_dims=None
-    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=100, num_batches = 10)
+    parameters = nn_model.model(X, Y_onehot, hidden_layer_dims, layer_types, learning_rate=0.5, num_iterations=101, num_batches = 10)
     Y_predict, train_accuracy = nn_model.predict(X, Y_onehot, parameters, hidden_layer_dims, layer_types)
     print('Training accuracy: %f' % train_accuracy)
     image_shape = (28,28)
@@ -99,8 +99,9 @@ def mnist_test():
     print(Y_predict[0,sample_indices])
     plot.display_image_samples(X, image_shape, sample_indices)
 
+# handWriting_test()
 # random_test()
-# random_test_with_dropout()
+random_test_with_dropout()
 # random_test_with_adam()
 # random_test_with_dropout_adam()
 # not_mnist_test()

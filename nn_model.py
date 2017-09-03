@@ -89,7 +89,7 @@ def forword_propagation(X, parameters, layer_dims, layer_types):
     :param X: input data of shape (size of input layer, number of examples)
     :param parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
     :param layer_dims: python list containing the size of each layer including input layer
-    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
+    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh" "softmax"
     :return: Yhat: output of the last activation,
              caches: python list storing cache of each layer, shape (size of output layer, number of examples)
                      cache is a python dictionary{'W': , 'b': , 'Z': , 'A': , 'A_prev': }
@@ -112,7 +112,7 @@ def linear_activation_backward(dA, cache, activation, lambd):
     Implement the backward propagation for the LINEAR->ACTIVATION layer
     :param dA: post-activation gradient for current layer
     :param cache: python dictionary{'W': , 'b': , 'Z': , 'A': , 'A_prev': }
-    :param activation: "sigmoid" or "relu" "tanh"
+    :param activation: "sigmoid" or "relu" "tanh" "softmax"
     :param lambd: regularization parameter
     :return: dA_prev: gradient of the cost with respect to the activation (of the previous layer), same shape as A_prev
              dW: gradient of the cost with respect to W (current layer), same shape as W
@@ -225,13 +225,13 @@ def compute_cost(Yhat, Y, parameters, activation, lambd):
     return cost
 
 
-def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random',decay_rate=0.99 ):
+def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, num_batches=1, lambd=0.0 , init_type='random',decay_rate=1):
     """
     :param X: input data of shape (size of input layer, number of examples)
     :param Y: labels vector  of shape (size of output layer, number of examples),
               ---for multi claasification, Y must use ont-hot encoding
     :param hidden_layer_dims: python list containing the size of each hidden layer
-    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
+    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh" "softmax"
     :param learning_rate: scalar
     :param num_iterations: scalar
     :param num_batches: scalar
@@ -252,7 +252,7 @@ def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, n
             Yhat,caches = forword_propagation(X[:, j*batch_size : (j+1)*batch_size], parameters, layer_dims, layer_types)
 
             # Compute cost
-            cost =compute_cost(Yhat, Y[:, j*batch_size : (j+1)*batch_size], parameters, layer_types[-1], lambd)
+            cost = compute_cost(Yhat, Y[:, j*batch_size : (j+1)*batch_size], parameters, layer_types[-1], lambd)
 
             # Backward propagation
             grads = backword_propagation(X[:, j*batch_size : (j+1)*batch_size], Y[:, j*batch_size : (j+1)*batch_size], parameters, caches, layer_dims, layer_types, lambd)
@@ -270,7 +270,6 @@ def model(X, Y, hidden_layer_dims, layer_types, learning_rate, num_iterations, n
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
     plt.xlabel('iterations')
-    plt.title("Learning rate =" + str(learning_rate))
     plt.show()
 
     return parameters
@@ -282,9 +281,10 @@ def predict(X, Y, parameters, hidden_layer_dims, layer_types, threshold=0.5):
     :param Y: labels vector  of shape (size of output layer, number of examples),
     :return: parameters: python dictionary containing weight matrix and bias vector, {'Wi': , 'bi': }
     :param hidden_layer_dims: python list containing the size of each hidden layer
-    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh"
+    :param layer_types: python list containing the type of each layer: "sigmoid" or "relu" "tanh" "softmax"
     :param threshold: scalar for logistic regression
-    :return: Y_predict , predicted labels vector of shape (1, number of examples)
+    :return: Y_predict: predicted labels vector of shape (1, number of examples)
+             accuracy: scalar
     """
     layer_dims=[X.shape[0],]
     if hidden_layer_dims!=None:
